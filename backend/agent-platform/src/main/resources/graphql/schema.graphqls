@@ -1,0 +1,28 @@
+type Query {
+    health: String!
+    tasks: [Task!]!
+    task(id: ID!): Task
+}
+
+type Mutation {
+    createTask(input: CreateTaskInput!): Task!
+}
+
+type Task {
+    id: ID!
+    title: String!
+    prompt: String!
+    status: TaskStatus!
+}
+
+input CreateTaskInput {
+    title: String!
+    prompt: String!
+}
+
+enum TaskStatus {
+    CREATED
+    IN_PROGRESS
+    COMPLETED
+    FAILED
+}

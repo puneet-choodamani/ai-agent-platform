@@ -1,4 +1,4 @@
-package com.puneet.agent_platform;
+package com.puneet.agentplatform;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
