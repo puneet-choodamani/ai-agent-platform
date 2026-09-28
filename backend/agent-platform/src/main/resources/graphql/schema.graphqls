@@ -6,6 +6,9 @@ type Query {
 
 type Mutation {
     createTask(input: CreateTaskInput!): Task!
+    chat(input: ChatInput!): ChatResponse!
+    technicalAnswer(input: ChatInput!): TechnicalAnswer!
+
 }
 
 type Task {
@@ -25,4 +28,19 @@ enum TaskStatus {
     IN_PROGRESS
     COMPLETED
     FAILED
+}
+
+input ChatInput {
+    message: String!
+}
+
+type ChatResponse {
+    message: String!
+}
+
+type TechnicalAnswer {
+    answer: String!
+    keyPoints: [String!]!
+    assumptions: [String!]!
+    needsClarification: Boolean!
 }
