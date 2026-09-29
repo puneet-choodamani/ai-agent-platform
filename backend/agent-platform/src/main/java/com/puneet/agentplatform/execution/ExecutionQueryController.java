@@ -18,7 +18,7 @@ public class ExecutionQueryController {
 
     @QueryMapping
     public List<Execution> executions(@Argument String taskId) {
-        return executionService.findTaskById(taskId);
+        return executionService.findByTaskId(taskId);
     }
 
     @QueryMapping
@@ -28,6 +28,6 @@ public class ExecutionQueryController {
 
     @SchemaMapping(typeName = "Task", field = "executions")
     public List<Execution> executionsForTask(Task task) {
-        return executionService.findTaskById(task.id());
+        return executionService.findByTaskId(task.id());
     }
 }

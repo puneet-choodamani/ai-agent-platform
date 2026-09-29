@@ -14,15 +14,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TaskService {
 
     private final Map<String, Task> tasks = new ConcurrentHashMap<>();
-    private final ExecutionService executionService;
 
-    public TaskService(ExecutionService executionService) {
-        this.executionService = executionService;
-
+    public TaskService() {
         createTask(
                 "Build AI Agent Platform",
                 "Build a general-purpose AI agent platform using Java and React");
-
     }
 
     public List<Task> findAll() {
@@ -35,16 +31,12 @@ public class TaskService {
 
     public Task createTask(String title, String prompt) {
         String id = UUID.randomUUID().toString();
-
         Task task = new Task(
                 id,
                 title,
                 prompt,
                 TaskStatus.CREATED);
-
         tasks.put(id, task);
-        executionService.createExecution(id);
-
         return task;
     }
 

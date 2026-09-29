@@ -8,6 +8,7 @@ type Query {
 
 type Mutation {
   createTask(input: CreateTaskInput!): Task!
+  startExecution(taskId: ID!): Execution!
   chat(input: ChatInput!): ChatResponse!
   technicalAnswer(input: ChatInput!): TechnicalAnswer!
 }

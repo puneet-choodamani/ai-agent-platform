@@ -15,7 +15,6 @@ public class ExecutionService {
     private final Map<String, Execution> executions = new ConcurrentHashMap<>();
 
     public Execution createExecution(String taskId) {
-
         String id = UUID.randomUUID().toString();
         Execution execution = new Execution(id, taskId, ExecutionStatus.CREATED,
                 OffsetDateTime.now().toString(), List.of());
@@ -24,21 +23,33 @@ public class ExecutionService {
 
     }
 
-
-    public Execution findById(String id){
+    public Execution findById(String id) {
         return executions.get(id);
     }
 
-    public List<Execution> findTaskById(String taskId){
-
+    public List<Execution> findByTaskId(String taskId) {
         return executions.values().stream()
                 .filter(execution -> execution.taskId().equals(taskId))
                 .toList();
-
     }
 
-    public List<Execution> findAll(){
+    public List<Execution> findAll() {
         return new ArrayList<>(executions.values());
     }
- 
+
+    public Execution startExecution(String taskId) {
+
+        String id = UUID.randomUUID().toString();
+
+        Execution execution = new Execution(
+                id,
+                taskId,
+                ExecutionStatus.QUEUED,
+                OffsetDateTime.now().toString(),
+                List.of());
+
+        executions.put(id, execution);
+
+        return execution;
+    }
 }
