@@ -7,6 +7,10 @@ public record Execution(
         String taskId,
         ExecutionStatus status,
         String createdAt,
+        String startedAt,
+        String completedAt,
+        String result,
+        String errorMessage,
         List<ExecutionStep> steps) {
 
 }
