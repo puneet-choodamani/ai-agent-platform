@@ -1,46 +1,95 @@
 type Query {
-    health: String!
-    tasks: [Task!]!
-    task(id: ID!): Task
+  health: String!
+  tasks: [Task!]!
+  task(id: ID!): Task
+  executions(taskId: ID!): [Execution!]!
+  execution(id: ID!): Execution
 }
 
 type Mutation {
-    createTask(input: CreateTaskInput!): Task!
-    chat(input: ChatInput!): ChatResponse!
-    technicalAnswer(input: ChatInput!): TechnicalAnswer!
-
+  createTask(input: CreateTaskInput!): Task!
+  chat(input: ChatInput!): ChatResponse!
+  technicalAnswer(input: ChatInput!): TechnicalAnswer!
 }
 
 type Task {
-    id: ID!
-    title: String!
-    prompt: String!
-    status: TaskStatus!
+  id: ID!
+  title: String!
+  prompt: String!
+  status: TaskStatus!
+  executions: [Execution!]!
 }
 
 input CreateTaskInput {
-    title: String!
-    prompt: String!
+  title: String!
+  prompt: String!
 }
 
 enum TaskStatus {
-    CREATED
-    IN_PROGRESS
-    COMPLETED
-    FAILED
+  CREATED
+  IN_PROGRESS
+  COMPLETED
+  FAILED
 }
 
 input ChatInput {
-    message: String!
+  message: String!
 }
 
 type ChatResponse {
-    message: String!
+  message: String!
 }
 
 type TechnicalAnswer {
-    answer: String!
-    keyPoints: [String!]!
-    assumptions: [String!]!
-    needsClarification: Boolean!
+  answer: String!
+  keyPoints: [String!]!
+  assumptions: [String!]!
+  needsClarification: Boolean!
+}
+
+type Execution {
+  id: ID!
+  taskId: ID!
+  status: ExecutionStatus!
+  createdAt: String!
+  steps: [ExecutionStep!]!
+}
+
+enum ExecutionStatus {
+  CREATED
+  QUEUED
+  IN_PROGRESS
+  WAITING_FOR_APPROVAL
+  PAUSED
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+type ExecutionStep {
+  id: ID!
+  executionId: ID!
+  sequence: Int!
+  type: ExecutionStepType!
+  status: ExecutionStepStatus!
+}
+
+enum ExecutionStepType {
+  LLM
+  TOOL
+  MCP
+  RAG
+  MEMORY
+  AGENT
+  APPROVAL
+  WORKFLOW
+  SANDBOX
+}
+
+enum ExecutionStepStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  SKIPPED
 }

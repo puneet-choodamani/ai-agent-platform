@@ -1,6 +1,9 @@
 package com.puneet.agentplatform.task;
 
 import org.springframework.stereotype.Service;
+
+import com.puneet.agentplatform.execution.ExecutionService;
+
 import java.util.Map;
 import java.util.UUID;
 import java.util.List;
@@ -11,8 +14,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TaskService {
 
     private final Map<String, Task> tasks = new ConcurrentHashMap<>();
+    private final ExecutionService executionService;
 
-    public TaskService() {
+    public TaskService(ExecutionService executionService) {
+        this.executionService = executionService;
 
         createTask(
                 "Build AI Agent Platform",
@@ -38,6 +43,7 @@ public class TaskService {
                 TaskStatus.CREATED);
 
         tasks.put(id, task);
+        executionService.createExecution(id);
 
         return task;
     }
