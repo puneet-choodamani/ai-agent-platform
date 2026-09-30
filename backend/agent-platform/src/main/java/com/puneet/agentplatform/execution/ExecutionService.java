@@ -1,5 +1,6 @@
 package com.puneet.agentplatform.execution;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -13,6 +14,11 @@ import java.util.List;
 public class ExecutionService {
 
         private final Map<String, Execution> executions = new ConcurrentHashMap<>();
+        private final ApplicationEventPublisher eventPublisher;
+
+        public ExecutionService(ApplicationEventPublisher eventPublisher) {
+                this.eventPublisher = eventPublisher;
+        }
 
         public Execution createExecution(String taskId) {
                 String id = UUID.randomUUID().toString();
@@ -20,6 +26,13 @@ public class ExecutionService {
                                 OffsetDateTime.now().toString(), null, null, null, null,
                                 List.of());
                 executions.put(id, execution);
+                eventPublisher.publishEvent(
+                                new ExecutionEvent(
+                                                execution.id(),
+                                                execution.taskId(),
+                                                ExecutionEventType.EXECUTION_CREATED,
+                                                null,
+                                                Map.of()));
                 return execution;
 
         }
@@ -66,6 +79,13 @@ public class ExecutionService {
                                 current.steps());
 
                 executions.put(executionId, updated);
+                eventPublisher.publishEvent(
+                                new ExecutionEvent(
+                                                updated.id(),
+                                                updated.taskId(),
+                                                ExecutionEventType.EXECUTION_STARTED,
+                                                null,
+                                                Map.of()));
 
                 return updated;
         }
@@ -88,6 +108,15 @@ public class ExecutionService {
                                 current.steps());
 
                 executions.put(executionId, updated);
+                eventPublisher.publishEvent(
+                                new ExecutionEvent(
+                                                updated.id(),
+                                                updated.taskId(),
+                                                ExecutionEventType.EXECUTION_COMPLETED,
+                                                null,
+                                                Map.of(
+                                                                "resultLength",
+                                                                result == null ? 0 : result.length())));
 
                 return updated;
         }
@@ -110,6 +139,16 @@ public class ExecutionService {
                                 current.steps());
 
                 executions.put(executionId, updated);
+
+                eventPublisher.publishEvent(
+                                new ExecutionEvent(
+                                                updated.id(),
+                                                updated.taskId(),
+                                                ExecutionEventType.EXECUTION_FAILED,
+                                                null,
+                                                Map.of(
+                                                                "error",
+                                                                errorMessage == null ? "" : errorMessage)));
 
                 return updated;
         }
@@ -136,6 +175,17 @@ public class ExecutionService {
                                 List.copyOf(steps));
 
                 executions.put(executionId, updated);
+
+                eventPublisher.publishEvent(
+                                new ExecutionEvent(
+                                                updated.id(),
+                                                updated.taskId(),
+                                                ExecutionEventType.STEP_STARTED,
+                                                null,
+                                                Map.of(
+                                                                "stepId", step.id(),
+                                                                "stepType", step.type().name(),
+                                                                "sequence", step.sequence())));
 
                 return updated;
         }
@@ -177,6 +227,35 @@ public class ExecutionService {
 
                 executions.put(executionId, updated);
 
+                if (status == ExecutionStepStatus.COMPLETED) {
+
+                        eventPublisher.publishEvent(
+                                        new ExecutionEvent(
+                                                        updated.id(),
+                                                        updated.taskId(),
+                                                        ExecutionEventType.STEP_COMPLETED,
+                                                        null,
+                                                        Map.of(
+                                                                        "stepId", stepId,
+                                                                        "stepType",
+                                                                        findStepType(updated, stepId).name(),
+                                                                        "durationMs",
+                                                                        durationMs == null ? 0 : durationMs)));
+                }
+
                 return updated;
+        }
+
+        private ExecutionStepType findStepType(
+                        Execution execution,
+                        String stepId) {
+
+                return execution.steps()
+                                .stream()
+                                .filter(step -> step.id().equals(stepId))
+                                .map(ExecutionStep::type)
+                                .findFirst()
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Step not found: " + stepId));
         }
 }
