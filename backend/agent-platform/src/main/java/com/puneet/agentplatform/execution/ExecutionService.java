@@ -247,6 +247,7 @@ public class ExecutionService {
         }
 
         private ExecutionStepType findStepType(
+
                         Execution execution,
                         String stepId) {
 
@@ -257,5 +258,32 @@ public class ExecutionService {
                                 .findFirst()
                                 .orElseThrow(() -> new IllegalArgumentException(
                                                 "Step not found: " + stepId));
+        }
+
+        public Execution markQueued(String executionId) {
+                Execution current = getRequired(executionId);
+
+                Execution updated = new Execution(
+                                current.id(),
+                                current.taskId(),
+                                ExecutionStatus.QUEUED,
+                                current.createdAt(),
+                                current.startedAt(),
+                                current.completedAt(),
+                                current.result(),
+                                current.errorMessage(),
+                                current.steps());
+
+                executions.put(executionId, updated);
+
+                eventPublisher.publishEvent(
+                                new ExecutionEvent(
+                                                updated.id(),
+                                                updated.taskId(),
+                                                ExecutionEventType.EXECUTION_QUEUED,
+                                                null,
+                                                Map.of()));
+
+                return updated;
         }
 }

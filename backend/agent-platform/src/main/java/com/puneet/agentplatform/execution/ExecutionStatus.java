@@ -8,6 +8,6 @@ public enum ExecutionStatus {
     PAUSED,
     COMPLETED,
     FAILED,
-    CANCELED,
+    CANCELED
 
 }

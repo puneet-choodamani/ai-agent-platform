@@ -13,16 +13,16 @@ public class ExecutionMutationController {
 
     private final ExecutionService executionService;
     private final TaskService taskService;
-    private final AgentRuntimeService agentRuntimeService;
+    private final ExecutionRequestProducer executionRequestProducer;
 
     public ExecutionMutationController(
             ExecutionService executionService,
             TaskService taskService,
-            AgentRuntimeService agentRuntimeService) {
+            ExecutionRequestProducer executionRequestProducer) {
 
         this.executionService = executionService;
         this.taskService = taskService;
-        this.agentRuntimeService = agentRuntimeService;
+        this.executionRequestProducer = executionRequestProducer;
     }
 
     @MutationMapping
@@ -36,11 +36,15 @@ public class ExecutionMutationController {
                     "Task not found: " + taskId);
         }
 
-        Execution execution =
-                executionService.createExecution(taskId);
+        Execution execution = executionService.createExecution(taskId);
 
-        return agentRuntimeService.execute(
-                execution.id(),
-                task.prompt());
+        Execution queuedExecution = executionService.markQueued(execution.id());
+
+        executionRequestProducer.publish(
+                new ExecutionRequested(
+                        execution.id(),
+                        taskId));
+
+        return queuedExecution;
     }
 }
