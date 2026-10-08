@@ -9,7 +9,10 @@ import org.springframework.context.event.EventListener;
 @Service
 public class NotificationService {
 
-        private final Sinks.Many<ExecutionEvent> eventSink = Sinks.many().multicast().onBackpressureBuffer();
+      private final Sinks.Many<ExecutionEvent> eventSink =
+        Sinks.many()
+                .multicast()
+                .onBackpressureBuffer(256, false);
 
         @EventListener
         public void handleExecutionEvent(ExecutionEvent event) {
@@ -17,10 +20,9 @@ public class NotificationService {
         }
 
         public Flux<ExecutionEvent> subscribe(String taskId) {
-                return eventSink.asFlux()
-                                .filter(event -> event.taskId().equals(taskId))
 
-                ;
+                return eventSink.asFlux()
+                                .filter(event -> event.taskId().equals(taskId));
         }
 
 }
