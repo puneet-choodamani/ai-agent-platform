@@ -103,3 +103,15 @@ enum ExecutionStepStatus {
   FAILED
   SKIPPED
 }
+
+type Subscription {
+  executionUpdates(taskId: ID!): ExecutionUpdate!
+}
+
+type ExecutionUpdate {
+  eventId: ID!
+  executionId: ID!
+  taskId: ID!
+  type: String!
+  occurredAt: String!
+}
