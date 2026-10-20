@@ -7,6 +7,9 @@ import com.puneet.agentplatform.task.TaskService;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.stereotype.Controller;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 @Controller
 public class ExecutionMutationController {
@@ -25,9 +28,12 @@ public class ExecutionMutationController {
         this.executionRequestProducer = executionRequestProducer;
     }
 
+    
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @MutationMapping
     public Execution startExecution(
-            @Argument String taskId) {
+            @Argument String taskId,
+            @AuthenticationPrincipal Jwt jwt) {
 
         Task task = taskService.findById(taskId);
 
@@ -36,15 +42,22 @@ public class ExecutionMutationController {
                     "Task not found: " + taskId);
         }
 
-        Execution execution = executionService.createExecution(taskId);
+        boolean isAdmin = jwt.getClaimAsMap("realm_access") != null
+                && jwt.getClaimAsMap("realm_access").get("roles") instanceof java.util.List<?> roles
+                && roles.contains("ADMIN");
 
+        if (!isAdmin && !task.ownerId().equals(jwt.getSubject())) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "You are not authorized to execute this task");
+        }
+
+        Execution execution = executionService.createExecution(taskId);
         Execution queuedExecution = executionService.markQueued(execution.id());
 
         executionRequestProducer.publish(
-                new ExecutionRequested(
-                        execution.id(),
-                        taskId));
+                new ExecutionRequested(execution.id(), taskId));
 
         return queuedExecution;
     }
+
 }

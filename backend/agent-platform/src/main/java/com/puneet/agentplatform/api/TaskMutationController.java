@@ -4,6 +4,8 @@ import com.puneet.agentplatform.task.Task;
 import com.puneet.agentplatform.task.TaskService;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Controller;
 
 @Controller
@@ -16,8 +18,8 @@ public class TaskMutationController {
     }
 
     @MutationMapping
-    public Task createTask(@Argument CreateTaskInput input) {
-        return taskService.createTask(input.title(), input.prompt());
+    public Task createTask(@Argument CreateTaskInput input, @AuthenticationPrincipal Jwt jwt) {
+        return taskService.createTask(input.title(), input.prompt() , jwt.getSubject());
     }
 
     public record CreateTaskInput(
